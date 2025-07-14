@@ -1,0 +1,27 @@
+.chat-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.chat-box {
+  background-color: #eaf6f6;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.chat-msg span {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 6px;
+  border-radius: 20px;
+}
+
+.chat-msg .text-end span {
+  background-color: #30e3ca;
+  color: #fff;
+}
+
+.chat-msg .text-start span {
+  background-color: #ff6b6b;
+  color: #fff;
+}

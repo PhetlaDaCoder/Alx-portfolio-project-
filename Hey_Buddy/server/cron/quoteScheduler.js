@@ -1,27 +1,28 @@
 const cron = require('node-cron');
 const axios = require('axios');
-const admin = require('../firebase/firebaseInit');
+const admin = require('../firebase');
+const { getUserDeviceTokens } = require('./userService'); // Your method to pull tokens
 
-const quoteScheduler = () => {
-  cron.schedule('0 9 * * *', async () => {
-    try {
-      const { data } = await axios.get(process.env.ZEN_QUOTES_URL);
-      const quote = `${data[0].q} — ${data[0].a}`;
+// Run every day at 8 AM
+cron.schedule('0 8 * * *', async () => {
+  try {
+    const { data } = await axios.get(process.env.ZEN_QUOTES_API);
+    const quote = `${data[0].q} — ${data[0].a}`;
 
-      const message = {
-        notification: {
-          title: 'Daily Motivation',
-          body: quote
-        },
-        topic: 'motivation'
-      };
+    const tokens = await getUserDeviceTokens(); // Array of FCM tokens
 
-      await admin.messaging().send(message);
-      console.log('🧘 Daily quote sent!');
-    } catch (err) {
-      console.error('Quote scheduler error:', err);
-    }
-  });
-};
+    const message = {
+      notification: {
+        title: "Daily Motivation 🌞",
+        body: quote
+      },
+      tokens: tokens
+    };
 
-module.exports = quoteScheduler;
+    const response = await admin.messaging().sendMulticast(message);
+    console.log(`Sent to ${response.successCount} users`);
+  } catch (err) {
+    console.error("Quote push failed:", err.message);
+  }
+});
+

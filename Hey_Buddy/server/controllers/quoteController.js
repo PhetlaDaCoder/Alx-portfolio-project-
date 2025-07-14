@@ -2,10 +2,9 @@ const axios = require('axios');
 
 exports.getDailyQuote = async (req, res) => {
   try {
-    const { data } = await axios.get(process.env.ZEN_QUOTES_URL);
-    const quote = `${data[0].q} — ${data[0].a}`;
-    res.status(200).json({ quote });
-  } catch (err) {
-    res.status(500).json({ error: 'Could not fetch quote' });
+    const { data } = await axios.get('https://zenquotes.io/api/today');
+    res.json(data[0]);
+  } catch {
+    res.json({ q: "Keep pushing!", a: "Hey_Buddy" });
   }
 };

@@ -1,32 +1,31 @@
+const admin = require('../firebase'); // Firebase Admin
 const Task = require('../models/Task');
+
+exports.getTasks = async (req, res) => {
+  const tasks = await Task.find({ userId: req.query.userId });
+  res.json(tasks);
+};
 
 exports.createTask = async (req, res) => {
   try {
-    const { title, dueDate, userId } = req.body;
-    const task = new Task({ title, dueDate, userId });
-    await task.save();
-    res.status(201).json(task);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create task' });
-  }
-};
+    const newTask = new Task(req.body);
+    await newTask.save();
 
-exports.getTasks = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const tasks = await Task.find({ userId });
-    res.status(200).json(tasks);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch tasks' });
-  }
-};
+    // Firebase notification logic
+    const message = {
+      notification: {
+        title: 'New Task Created 📝',
+        body: `Task: ${newTask.name} - Priority: ${newTask.priority}`
+      },
+      topic: 'tasks' // You can also target specific device tokens
+    };
 
-exports.deleteTask = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await Task.findByIdAndDelete(id);
-    res.status(200).json({ message: 'Task deleted' });
+    const response = await admin.messaging().send(message);
+    console.log('Push sent:', response);
+
+    res.status(201).json(newTask);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete task' });
+    console.error('Task creation failed:', err.message);
+    res.status(500).json({ error: 'Task creation failed' });
   }
 };
